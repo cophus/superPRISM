@@ -121,13 +121,16 @@ else
         p = [0 0];
         rgbPlot = [1 1 1];
     end
+    % Protect interpolation against duplicate points:
+    [p,indsKeep] = unique(p,'rows');
+    rgbPlot = rgbPlot(indsKeep,:);
+    % Output beams
     qxyBeams = p.*[dqx dqy];
     emdSTEM.beamVectors = qxyBeams;
     emdSTEM.beamNum = size(qxyBeams,1);
     
     % pixel basis
     [ya,xa] = meshgrid(1:N(2),1:N(1));
-    %     xyAll = [xa(:) ya(:)];
     
     % Coordinate system - spec up by cropping subset
     if emdSTEM.partitionNumberRings > 0
