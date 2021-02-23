@@ -372,7 +372,7 @@ else
         end
     end
 end
-if flagProgress == true 
+if nargout > 0 && flagProgress == true 
     fprintf([reverseStr '']);
 end
 
