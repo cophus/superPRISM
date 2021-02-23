@@ -1,0 +1,46 @@
+function [potLookup] = projPotLookup(atomID,x,y,z)
+
+% Colin Ophus - 2020 August
+% Projected potential function - potentials from Kirkland.
+% Lookup table version for (x,y,z)
+
+% Get fparams file
+load('fparams.mat');
+
+% Tile coordinates in 3D
+[ya,xa,za] = meshgrid(y,x,z);
+r2 = xa.^2 + ya.^2 + za.^2;
+r1 = sqrt(r2);
+
+% init constants
+dz = z(2) - z(1);
+a0 = 0.5292;
+e = 14.4;
+term1 = 2*(pi^2)*a0*e       * dz;
+term2 = 2*(pi^2.5)*a0*e     * dz;
+
+% compute potential lookup table
+ap = fparams(atomID,:);
+potLookup = term1*( ...
+      ap(1)*exp(-2*pi*sqrt(ap(2))*r1)./r1 ...
+    + ap(3)*exp(-2*pi*sqrt(ap(4))*r1)./r1 ...
+    + ap(5)*exp(-2*pi*sqrt(ap(6))*r1)./r1) ...
+    + term2*( ...
+      ap(7)*(ap(8)^-1.5)*exp(-pi^2/ap(8)*r2) ...
+    + ap(9)*(ap(10)^-1.5)*exp(-pi^2/ap(10)*r2) ...
+    + ap(11)*(ap(12)^-1.5)*exp(-pi^2/ap(12)*r2));
+
+% Subtract potential at cutoff radius, scale by z pixel size
+rCutoff = min([max(abs(x)) max(abs(y)) max(abs(z))]);
+potCutoff = term1*( ...
+      ap(1)*exp(-2*pi*sqrt(ap(2))*rCutoff)./rCutoff ...
+    + ap(3)*exp(-2*pi*sqrt(ap(4))*rCutoff)./rCutoff ...
+    + ap(5)*exp(-2*pi*sqrt(ap(6))*rCutoff)./rCutoff) ...
+    + term2*( ...
+      ap(7)*(ap(8)^-1.5)*exp(-pi^2/ap(8)*rCutoff^2) ...
+    + ap(9)*(ap(10)^-1.5)*exp(-pi^2/ap(10)*rCutoff^2) ...
+    + ap(11)*(ap(12)^-1.5)*exp(-pi^2/ap(12)*rCutoff^2));
+potLookup(:) = max(potLookup - potCutoff, 0);% * (z(2)-z(1));
+
+
+end
