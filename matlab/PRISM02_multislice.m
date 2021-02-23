@@ -3,6 +3,8 @@ function [emdSTEM] = PRISM02_multislice(emdSTEM)
 % Colin Ophus - 2020 Sept
 % 02 - conventional multislice STEM for comparison, from same potential input
 
+% Inputs
+flagProgress = true;  % Display progress on console
 % Output detector settings
 if ~isfield(emdSTEM,'flagOutput3D'); emdSTEM.flagOutput3D = true; end
 if ~isfield(emdSTEM,'flagOutput4D'); emdSTEM.flagOutput4D = true; end
@@ -186,6 +188,9 @@ end
 
 
 % Main loop
+if flagProgress == true
+    reverseStr = ''; % initialize console message piece
+end
 tic
 for a0 = 1:emdSTEM.numFP
     trans = exp((1i*emdSTEM.sigma) * emdSTEM.pot(:,:,:,a0));
@@ -227,6 +232,15 @@ for a0 = 1:emdSTEM.numFP
                 
             end
             
+            if flagProgress == true
+                comp = ((ay / length(emdSTEM.yp) ...
+                    + ax - 1) / length(emdSTEM.xp) ...
+                    + a0 - 1) / emdSTEM.numFP;
+                msg = sprintf(['Multislice simulation is ' ...
+                    sprintf('%0.2f',100*comp) ' percent complete']);
+                fprintf([reverseStr, msg]);
+                reverseStr = repmat(sprintf('\b'),1,length(msg));
+            end
         end
         PsiOutput(:) = abs(Psi(emdSTEM.xAA,emdSTEM.yAA)).^2;
         
@@ -240,14 +254,15 @@ for a0 = 1:emdSTEM.numFP
     end
     
 end
+if flagProgress == true 
+    fprintf([reverseStr '']);
+end
 if emdSTEM.flagOutput3D == true
     emdSTEM.output3D(:) = emdSTEM.output3D / emdSTEM.numFP;
 end
 if emdSTEM.flagOutput4D == true
     emdSTEM.output4D(:) = emdSTEM.output4D ...
         * (prod(emdSTEM.interpolationFactor) / emdSTEM.numFP);
-    
-    
 end
 
 

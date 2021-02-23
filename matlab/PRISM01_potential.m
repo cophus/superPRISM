@@ -10,9 +10,9 @@ tic
 %           given by [x y z atomic_number], for N atoms [positions in Angstroms]
 % cellDim - Dimensions of the unit cell [x_cell y_cell z_cell] in Angstroms
 
+flagProgress = true;  % Display progress on console
 flagAvgFP = true;   % Average all frozen phonon configurations
 flagFlipCellDimZ = true;
-flagProgress = 1;  % Display progress on console
 % RMS atomic displacements (from the Debye waller coefficients).
 u = ones(118,1) * 0.10;
 if nargin < 3; emdSTEM = struct; end
@@ -92,8 +92,7 @@ emdSTEM.pot = zeros(Npot,'single');
 
 % Main loop over atoms
 if flagProgress == true
-%     progressbar(0,2);
-    comp = 0;
+    reverseStr = ''; % initialize console message piece
 end
 for a0 = 1:size(atoms,1)
     xyzID = atoms(a0,1:4);
@@ -136,12 +135,15 @@ for a0 = 1:size(atoms,1)
     if flagProgress == true
         if mod(a0,100) == 0
             comp = a0 / size(atoms,1);
-%             progressbar(comp,2);
+            msg = sprintf(['Potential calculation is ' ...
+                sprintf('%0.2f',100*comp) ' percent complete']);
+            fprintf([reverseStr, msg]);
+            reverseStr = repmat(sprintf('\b'),1,length(msg));
         end
     end
 end
-if flagProgress == true && comp < 1
-%     progressbar(1,2);
+if flagProgress == true 
+    fprintf([reverseStr '']);
 end
 
 

@@ -1,11 +1,12 @@
 function [emdSTEM] = PRISM02_Smatrix(emdSTEM)
 tic
 
-% Colin Ophus - 2020 Sept
+% Colin Ophus - 2021 Feb
 % 02 - Compute the interpolated "Compact S-Matrix", either for STEM probe
 %      partitioning + PRISM interpolation, or legacy PRISM.
 
 % Inputs
+flagProgress = true;  % Display progress on console
 % Microscope voltage [Volts]
 if ~isfield(emdSTEM,'E0'); emdSTEM.E0 = 80e3; end    
 % probe convergence semiangle [rads]
@@ -325,6 +326,9 @@ else
     PsiAA = zeros(emdSTEM.imageSize / 2,'single');
     
     % Calculate all columns of the scattering matrix, for all FP configs
+    if flagProgress == true
+        reverseStr = ''; % initialize console message piece
+    end
     for a0 = 1:emdSTEM.numFP
         trans = exp((1i*emdSTEM.sigma) * emdSTEM.pot(:,:,:,a0));
         for a1 = 1:emdSTEM.beamNum
@@ -357,13 +361,20 @@ else
             emdSTEM.Scompact(:,a1,a0) = PsiAA(:);
             
             % Progress
+            if flagProgress == true
             comp = (a1 / emdSTEM.beamNum ...
                 + a0 - 1) / emdSTEM.numFP;
-%             progressbar(comp,2);
+                msg = sprintf(['S-Matrix calculation is ' ...
+                    sprintf('%0.2f',100*comp) ' percent complete']);
+                fprintf([reverseStr, msg]);
+                reverseStr = repmat(sprintf('\b'),1,length(msg));
+            end
         end
     end
 end
-
+if flagProgress == true 
+    fprintf([reverseStr '']);
+end
 
 emdSTEM.time02Smatrix = toc;
 end

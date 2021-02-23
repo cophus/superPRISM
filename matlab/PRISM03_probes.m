@@ -1,9 +1,11 @@
 function [emdSTEM] = PRISM03_probes(emdSTEM)
 tic
 
-% Colin Ophus - 2020 Sept
+% Colin Ophus - 2021 Feb
 % 03 - Simulate STEM probes, save 3D and / or 4D output intensities
 
+% Inputs
+flagProgress = true;  % Display progress on console
 % Output detector settings
 if ~isfield(emdSTEM,'flagOutput3D'); emdSTEM.flagOutput3D = true; end
 if ~isfield(emdSTEM,'flagOutput4D'); emdSTEM.flagOutput4D = true; end
@@ -14,7 +16,7 @@ if ~isfield(emdSTEM,'flagProbePositionsNearestPixel'); emdSTEM.flagProbePosition
 
 % Probe positions
 if ~isfield(emdSTEM,'xp')
-    dxy = emdSTEM.cellDim(1:2) / 250;
+    dxy = emdSTEM.cellDim(1:2) / 100;
     xR = [0 1]*emdSTEM.cellDim(1);
     yR = [0 1]*emdSTEM.cellDim(2);
     emdSTEM.xp = (xR(1)+dxy/2):dxy:(xR(2)-dxy/2);
@@ -105,7 +107,9 @@ emdSTEM.imageSizeAA = emdSTEM.imageSize / 2;
 
 
 % Loop over all STEM probes
-% progressbar(0,2);
+if flagProgress == true
+    reverseStr = ''; % initialize console message piece
+end
 for ax = 1:length(emdSTEM.xp)
     
     % x dim cropping box, subpixel probe shift along x
@@ -220,8 +224,16 @@ for ax = 1:length(emdSTEM.xp)
         end
     end
     
-    comp =  ax / length(emdSTEM.xp);
-%     progressbar(comp,2);
+    if flagProgress == true
+        comp =  ax / length(emdSTEM.xp);
+        msg = sprintf(['Probe calculations are ' ...
+            sprintf('%0.2f',100*comp) ' percent complete']);
+        fprintf([reverseStr, msg]);
+        reverseStr = repmat(sprintf('\b'),1,length(msg));
+    end
+end
+if flagProgress == true 
+    fprintf([reverseStr '']);
 end
 if emdSTEM.flagOutput3D == true
     emdSTEM.output3D(:) = emdSTEM.output3D / emdSTEM.numFP;
