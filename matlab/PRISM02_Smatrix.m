@@ -121,6 +121,7 @@ else
         p = [0 0];
         rgbPlot = [1 1 1];
     end
+    
     % Protect interpolation against duplicate points:
     [p,indsKeep] = unique(p,'rows');
     rgbPlot = rgbPlot(indsKeep,:);
@@ -230,10 +231,14 @@ if nargout == 0
     set(gcf,'color','w')
     
     if isempty(emdSTEM.partitionNumberRings )
-         imagesc(fftshift(emdSTEM.beamIndexInterp),...
+        Ip = fftshift(emdSTEM.beamIndexInterp);
+        Ip = repelem(Ip, ...
+            emdSTEM.interpolationFactor(1),...
+            emdSTEM.interpolationFactor(2));
+         imagesc(Ip,...
             'xdata',fftshift(qy),...
             'ydata',fftshift(qx))
-        
+        colormap(jetBlack)
     else        
         imagePlot = zeros(N(1),N(2),3);
         for a0 = 1:size(rgbPlot,1)

@@ -16,8 +16,8 @@ if ~isfield(emdSTEM,'probeSemiangleArray'); emdSTEM.probeSemiangleArray = 20 / 1
 if ~isfield(emdSTEM,'probeDefocusDF'); emdSTEM.probeDefocusDF = 0; end
 % spacing of bins in 3D output [rads]
 if ~isfield(emdSTEM,'drBins3D'); emdSTEM.drBins3D = 1 / 1000; end
-
-thicknessOutput = emdSTEM.cellDim(3);  % single thickness output
+% single thickness output
+if ~isfield(emdSTEM,'thicknessOutput'); emdSTEM.thicknessOutput = emdSTEM.cellDim(3); end
 
 %  Probe positions
 if ~isfield(emdSTEM,'xp')
@@ -171,9 +171,9 @@ end
 if emdSTEM.flagOutput4D == true
     % planes to output thickness
     z = (1:emdSTEM.numPlanes)*emdSTEM.sliceThickness;
-    indOutput4D = zeros(length(thicknessOutput),1);
-    for a0 = 1:length(thicknessOutput)
-        [~,indOutput4D(a0)] = min(abs(z - thicknessOutput(a0)));
+    indOutput4D = zeros(length(emdSTEM.thicknessOutput),1);
+    for a0 = 1:length(emdSTEM.thicknessOutput)
+        [~,indOutput4D(a0)] = min(abs(z - emdSTEM.thicknessOutput(a0)));
     end
     
     emdSTEM.output4D = zeros( ...
@@ -181,7 +181,7 @@ if emdSTEM.flagOutput4D == true
         length(emdSTEM.yAA) / emdSTEM.interpolationFactor(2),...
         length(emdSTEM.xp),...
         length(emdSTEM.yp),...
-        length(thicknessOutput),...
+        length(emdSTEM.thicknessOutput),...
         'single');
 end
 

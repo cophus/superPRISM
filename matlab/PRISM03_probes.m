@@ -16,7 +16,7 @@ if ~isfield(emdSTEM,'flagProbePositionsNearestPixel'); emdSTEM.flagProbePosition
 
 % Probe positions
 if ~isfield(emdSTEM,'xp')
-    dxy = emdSTEM.cellDim(1:2) / 100;
+    dxy = emdSTEM.cellDim(1:2) / 10;
     xR = [0 1]*emdSTEM.cellDim(1);
     yR = [0 1]*emdSTEM.cellDim(2);
     emdSTEM.xp = (xR(1)+dxy/2):dxy:(xR(2)-dxy/2);
