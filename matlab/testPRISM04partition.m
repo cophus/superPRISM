@@ -1,7 +1,7 @@
 function [] = testPRISM04partition()
 
 % Colin Ophus - 2021 Feb
-% 02 - testing of pure partitioned PRISM simulations
+% 04 - testing of partitioned PRISM simulations
 
 % input .mat file for potentials, output of final results
 test_file_name = 'Au_deca_pot.mat';

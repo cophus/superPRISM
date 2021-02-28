@@ -1,7 +1,7 @@
 function [] = testPRISM03prism()
 
 % Colin Ophus - 2021 Feb
-% 02 - testing of pure PRISM simulations
+% 03 - testing of pure PRISM simulations
 
 % input .mat file for potentials, output of final results
 test_file_name = 'Au_deca_pot.mat';
