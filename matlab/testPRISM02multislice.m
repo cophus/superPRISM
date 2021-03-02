@@ -13,10 +13,11 @@ load(test_file_name);
 % interp factor testing
 emdSTEM.interpolationFactor = [1 1]*1; 
 % emdSTEM.interpolationFactor = [1 1]*2; 
-% emdSTEM.interpolationFactor = [1 1]*5; 
+% emdSTEM.interpolationFactor = [1 1]*4; 
+% emdSTEM.interpolationFactor = [1 1]*8; 
 
 % Probe positions
-dxy = emdSTEM.cellDim(1:2) / 400;
+dxy = emdSTEM.cellDim(1:2) / 512;
 xR = [0 1]*emdSTEM.cellDim(1);
 yR = [0 1]*emdSTEM.cellDim(2);
 emdSTEM.xp = (xR(1)+dxy/2):dxy:(xR(2)-dxy/2);

@@ -11,7 +11,7 @@ test_file_name = 'Au_deca_pot.mat';
 load('inputData01.mat')
 
 % Inputs:
-emdSTEM.pixelSize = 0.1;
+emdSTEM.pixelSize = 100 / 1024;
 emdSTEM.potBound = 3;
 emdSTEM.potSamplingZ = 0.1; 
 emdSTEM.potBandLimit = [0.75 0.95]; 

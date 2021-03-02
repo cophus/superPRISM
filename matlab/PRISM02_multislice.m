@@ -7,7 +7,7 @@ function [emdSTEM] = PRISM02_multislice(emdSTEM)
 flagProgress = true;  % Display progress on console
 % Output detector settings
 if ~isfield(emdSTEM,'flagOutput3D'); emdSTEM.flagOutput3D = true; end
-if ~isfield(emdSTEM,'flagOutput4D'); emdSTEM.flagOutput4D = true; end
+if ~isfield(emdSTEM,'flagOutput4D'); emdSTEM.flagOutput4D = false; end
 % Microscope voltage [Volts]
 if ~isfield(emdSTEM,'E0'); emdSTEM.E0 = 80e3; end
 % probe convergence semiangle [rads]
@@ -21,7 +21,7 @@ if ~isfield(emdSTEM,'thicknessOutput'); emdSTEM.thicknessOutput = emdSTEM.cellDi
 
 %  Probe positions
 if ~isfield(emdSTEM,'xp')
-    dxy = emdSTEM.cellDim(1:2) / 10;
+    dxy = emdSTEM.cellDim(1:2) / 32;%512;
     xR = [0 1]*emdSTEM.cellDim(1);
     yR = [0 1]*emdSTEM.cellDim(2);
     emdSTEM.xp = (xR(1)+dxy/2):dxy:(xR(2)-dxy/2);
@@ -229,7 +229,15 @@ for a0 = 1:emdSTEM.numFP
                         end
                     end
                 end
-                
+            end
+            PsiOutput(:) = abs(Psi(emdSTEM.xAA,emdSTEM.yAA)).^2;
+            
+            if emdSTEM.flagOutput3D == true
+                emdSTEM.output3D(ax,ay,:) = squeeze(emdSTEM.output3D(ax,ay,:)) + ...
+                    accumarray(qDetBins1, ...
+                    PsiOutput(qDet1sub) .* qDetWeights1,[numDetBins 1]) + ...
+                    accumarray(qDetBins2, ...
+                    PsiOutput(qDet2sub) .* qDetWeights2,[numDetBins 1]);
             end
             
             if flagProgress == true
@@ -242,17 +250,7 @@ for a0 = 1:emdSTEM.numFP
                 reverseStr = repmat(sprintf('\b'),1,length(msg));
             end
         end
-        PsiOutput(:) = abs(Psi(emdSTEM.xAA,emdSTEM.yAA)).^2;
-        
-        if emdSTEM.flagOutput3D == true
-            emdSTEM.output3D(ax,ay,:) = squeeze(emdSTEM.output3D(ax,ay,:)) + ...
-                accumarray(qDetBins1, ...
-                PsiOutput(qDet1sub) .* qDetWeights1,[numDetBins 1]) + ...
-                accumarray(qDetBins2, ...
-                PsiOutput(qDet2sub) .* qDetWeights2,[numDetBins 1]);
-        end
     end
-    
 end
 if flagProgress == true 
     fprintf([reverseStr '']);
