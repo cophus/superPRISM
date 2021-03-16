@@ -21,11 +21,12 @@ if ~isfield(emdSTEM,'thicknessOutput'); emdSTEM.thicknessOutput = emdSTEM.cellDi
 
 %  Probe positions
 if ~isfield(emdSTEM,'xp')
-    dxy = emdSTEM.cellDim(1:2) / 32;%512;
+    dxy = emdSTEM.cellDim(1:2) / 512;
     xR = [0 1]*emdSTEM.cellDim(1);
     yR = [0 1]*emdSTEM.cellDim(2);
     emdSTEM.xp = (xR(1)+dxy/2):dxy:(xR(2)-dxy/2);
     emdSTEM.yp = (yR(1)+dxy/2):dxy:(yR(2)-dxy/2);
+
     % Single probe position
     emdSTEM.xp = emdSTEM.cellDim(1) * 0.5;
     emdSTEM.yp = emdSTEM.cellDim(2) * 0.5;
@@ -90,14 +91,6 @@ else
     emdSTEM.PsiInit(:) = emdSTEM.PsiInit / sqrt(sum(abs(emdSTEM.PsiInit(:)).^2));
 end
 
-% figure(11)
-% clf
-% imagesc(fftshift(abs(emdSTEM.PsiInit)))
-% axis equal off
-% colormap(gray)
-% set(gca,'position',[0 0 1 1])
- 
-
 % Probe defocus
 emdSTEM.probeDefocusC1 = -1 * emdSTEM.probeDefocusDF;
 chi = (pi*emdSTEM.lambda*emdSTEM.probeDefocusC1)*emdSTEM.q2;
@@ -139,18 +132,23 @@ PsiOutput = zeros(emdSTEM.imageSize / 2);
 
 % Detector coordinates of 3D output
 if emdSTEM.flagOutput3D == true
-    qxa = emdSTEM.qxa(emdSTEM.xAA,emdSTEM.yAA);
-    qya = emdSTEM.qya(emdSTEM.xAA,emdSTEM.yAA);
-    q1 = sqrt(qxa.^2 + qya.^2);
-    
-    emdSTEM.qMax = min(max(qxa(:,1)),max(qya(1,:)));
+    % Generate the AA coordinate system
+    N = emdSTEM.imageSize  / 2;
+    qx = makeFourierCoords(N(1), 2*emdSTEM.pixelSize(1));
+    qy = makeFourierCoords(N(2), 2*emdSTEM.pixelSize(2));
+    [emdSTEM.qyaInterp,emdSTEM.qxaInterp] = meshgrid(qy,qx);
+    emdSTEM.q2Interp = emdSTEM.qxaInterp.^2 + emdSTEM.qyaInterp.^2;
+    emdSTEM.q1Interp = sqrt(emdSTEM.q2Interp);
+
+    % total detector bins
+    emdSTEM.qMax = min(max(emdSTEM.qxaInterp(:,1)),max(emdSTEM.qyaInterp(1,:)));
     alphaMax = emdSTEM.qMax * emdSTEM.lambda;
     emdSTEM.detectorAngles = (emdSTEM.drBins3D/2):emdSTEM.drBins3D:(alphaMax-emdSTEM.drBins3D/2);
     numDetBins = length(emdSTEM.detectorAngles);
     
     % detector bin indices
     dqDet = emdSTEM.drBins3D / emdSTEM.lambda;
-    qDetInds = max(q1 / dqDet + 0.5,1);
+    qDetInds = max(emdSTEM.q1Interp / dqDet,1);
     qF = floor(qDetInds);
     dq = qDetInds - qF;
     
@@ -185,7 +183,8 @@ if emdSTEM.flagOutput4D == true
         'single');
 end
 
-
+% Extra probe shift to align coordinate system with PRISM02_SMatrix
+dxyAlign = -emdSTEM.pixelSize;
 
 % Main loop
 if flagProgress == true
@@ -200,10 +199,15 @@ for a0 = 1:emdSTEM.numFP
         
         for ay = 1:length(emdSTEM.yp)
             
-            % Shift probe
+            % Shift probe - note 1 pixel shift added to agree with the 
+            % coordinate convention used in the partitioning / PRISM sims
             Psi = PsiInit;
             Psi(sub) = Psi(sub) .* exp( ....
-                qxShiftSub*emdSTEM.xp(ax) + qyShiftSub*emdSTEM.yp(ay));
+                qxShiftSub*(emdSTEM.xp(ax) + dxyAlign(1)) + ...
+                qyShiftSub*(emdSTEM.yp(ay) + dxyAlign(2)));
+            %             Psi(sub) = Psi(sub) .* exp( ....
+            %                 qxShiftSub*emdSTEM.xp(ax) + qyShiftSub*emdSTEM.yp(ay));
+            
             
             % Propagate through foil
             for a2 = 1:emdSTEM.numPlanes

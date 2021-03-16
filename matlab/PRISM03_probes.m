@@ -11,16 +11,17 @@ if ~isfield(emdSTEM,'flagOutput3D'); emdSTEM.flagOutput3D = true; end
 if ~isfield(emdSTEM,'flagOutput4D'); emdSTEM.flagOutput4D = false; end
 % spacing of bins in 3D output (rads)
 if ~isfield(emdSTEM,'drBins3D'); emdSTEM.drBins3D = 1 / 1000; end
-% Probe positions at nearest wavefunction pixels (faster)
+% Probe positions at nearest wavefunction pixels (faster, but no sub-pixel probe positions possible)
 if ~isfield(emdSTEM,'flagProbePositionsNearestPixel'); emdSTEM.flagProbePositionsNearestPixel = true; end
 
 % Probe positions
 if ~isfield(emdSTEM,'xp')
-    dxy = emdSTEM.cellDim(1:2) / 100;
+    dxy = emdSTEM.cellDim(1:2) / 512;
     xR = [0 1]*emdSTEM.cellDim(1);
     yR = [0 1]*emdSTEM.cellDim(2);
     emdSTEM.xp = (xR(1)+dxy/2):dxy:(xR(2)-dxy/2);
     emdSTEM.yp = (yR(1)+dxy/2):dxy:(yR(2)-dxy/2);
+    
     % Single probe position
     emdSTEM.xp = emdSTEM.cellDim(1) * 0.5;
     emdSTEM.yp = emdSTEM.cellDim(2) * 0.5;
@@ -33,6 +34,7 @@ end
 
 % Output init
 if emdSTEM.flagOutput3D == true
+    % total detector bins
     emdSTEM.qMax = min(max(emdSTEM.qxaInterp(:,1)),max(emdSTEM.qyaInterp(1,:)));
     alphaMax = emdSTEM.qMax * emdSTEM.lambda;
     emdSTEM.detectorAngles = (emdSTEM.drBins3D/2):emdSTEM.drBins3D:(alphaMax-emdSTEM.drBins3D/2);

@@ -17,6 +17,10 @@ if ~isfield(emdSTEM,'probeDefocusDF'); emdSTEM.probeDefocusDF = 0; end
 % Set this value to empty to use original PRISM
 if ~isfield(emdSTEM,'partitionNumberRings'); emdSTEM.partitionNumberRings = 4; end
 % emdSTEM.partitionNumberRings = [];
+% If this option is not empty, select N brightest beams from FFT of proj pot.
+% if ~isfield(emdSTEM,'selectBrightestBeamsNum'); emdSTEM.selectBrightestBeamsNum = 6; end
+if ~isfield(emdSTEM,'selectBrightestBeamsNum'); emdSTEM.selectBrightestBeamsNum = []; end
+
 % Set this flag to true to use a sigmoidal basis
 if ~isfield(emdSTEM,'partitionSigmoidal'); emdSTEM.partitionSigmoidal = false; end
 
@@ -71,12 +75,16 @@ if isempty(emdSTEM.partitionNumberRings)
     emdSTEM.beamIndexInterp(inds) = 1:emdSTEM.beamNum;
     
 else
+    qxProbe = qProbe / dqx;
+    qyProbe = qProbe / dqy;
+    
+    if isempty(emdSTEM.selectBrightestBeamsNum)
+        % partition using equally spaced tiles
     qRing = (0:emdSTEM.partitionNumberRings)';
     numRingBeams = qRing*6;
     numRingBeams(1) = 1;
     qRadius = (qRing / emdSTEM.partitionNumberRings);
-    qxProbe = qProbe / dqx;
-    qyProbe = qProbe / dqy;
+
     
     % Loop over rings of beams
     p = zeros(sum(numRingBeams),2);
@@ -122,6 +130,25 @@ else
         rgbPlot = [1 1 1];
     end
     
+    else
+        % partition from projected potential FFT spots
+        potSumFFT = abs(fft2(mean(sum(emdSTEM.pot,3),4)));
+        
+        % find N+1 brightest FFT spots (+1 is for the center beam)
+        [~,inds] = sort(potSumFFT(:),'descend');
+        indsBeam = inds(1:(emdSTEM.selectBrightestBeamsNum+1));
+        [xp,yp] = ind2sub(emdSTEM.imageSize,indsBeam);
+        xp = mod(xp - 1 + emdSTEM.imageSize(1)/2, emdSTEM.imageSize(1)) ...
+            - emdSTEM.imageSize(1)/2;
+        yp = mod(yp - 1 + emdSTEM.imageSize(2)/2, emdSTEM.imageSize(2)) ...
+            - emdSTEM.imageSize(2)/2;
+        p = [xp yp];
+        
+        % colours
+        rgbPlot = rand(emdSTEM.selectBrightestBeamsNum+1,3);
+        rgbPlot(1,:) = [1 1 1];
+    end
+    
     % Protect interpolation against duplicate points:
     [p,indsKeep] = unique(p,'rows');
     rgbPlot = rgbPlot(indsKeep,:);
@@ -135,7 +162,11 @@ else
     
     % Coordinate system - spec up by cropping subset
     if emdSTEM.partitionNumberRings > 0
-        distMax = round(max(qxProbe,qyProbe) / emdSTEM.partitionNumberRings * 1.2);
+        if isempty(emdSTEM.selectBrightestBeamsNum)
+            distMax = round(max(qxProbe,qyProbe) / emdSTEM.partitionNumberRings * 1.2);
+        else
+            distMax = round(max(qxProbe,qyProbe) * 1.2);
+        end
         v = -distMax:distMax;
         
         % Calculate the partitions via level sets of each beam

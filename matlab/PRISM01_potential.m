@@ -14,11 +14,11 @@ flagProgress = true;  % Display progress on console
 flagAvgFP = true;   % Average all frozen phonon configurations
 flagFlipCellDimZ = true;
 % RMS atomic displacements (from the Debye waller coefficients).
-u = ones(118,1) * 0.10;
+u = ones(118,1) * 0.10 * 0;
 if nargin < 3; emdSTEM = struct; end
 
 % Realspace pixel size.
-if ~isfield(emdSTEM,'pixelSize'); emdSTEM.pixelSize = 0.1; end   
+if ~isfield(emdSTEM,'pixelSize'); emdSTEM.pixelSize = 100/1024; end   
 % Radial distance to integrate atomic potentials. [Ang]
 if ~isfield(emdSTEM,'potBound'); emdSTEM.potBound = 3; end
 % Z sampling density for integrating atomic potentials. [Ang]
