@@ -14,7 +14,7 @@ flagProgress = true;  % Display progress on console
 flagAvgFP = true;   % Average all frozen phonon configurations
 flagFlipCellDimZ = true;
 % RMS atomic displacements (from the Debye waller coefficients).
-u = ones(118,1) * 0.10 * 0;
+u = ones(118,1) * 0.10;
 if nargin < 3; emdSTEM = struct; end
 
 % Realspace pixel size.

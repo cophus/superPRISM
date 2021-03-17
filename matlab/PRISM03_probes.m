@@ -8,7 +8,7 @@ tic
 flagProgress = true;  % Display progress on console
 % Output detector settings
 if ~isfield(emdSTEM,'flagOutput3D'); emdSTEM.flagOutput3D = true; end
-if ~isfield(emdSTEM,'flagOutput4D'); emdSTEM.flagOutput4D = false; end
+if ~isfield(emdSTEM,'flagOutput4D'); emdSTEM.flagOutput4D = true; end
 % spacing of bins in 3D output (rads)
 if ~isfield(emdSTEM,'drBins3D'); emdSTEM.drBins3D = 1 / 1000; end
 % Probe positions at nearest wavefunction pixels (faster, but no sub-pixel probe positions possible)
@@ -150,7 +150,7 @@ for ax = 1:length(emdSTEM.xp)
                     PsiOutput(:) = scalePsiOutput * abs(fft2(reshape( ...
                         emdSTEM.Scompact * probeCoefs,Nout))).^2;
                 else
-                    PsiOutput(:) = abs(fft2(reshape( ...
+                    PsiOutput(:) = scalePsiOutput * abs(fft2(reshape( ...
                         emdSTEM.Scompact(inds,:,a0) * probeCoefs,Nout))).^2;
                 end
                 
