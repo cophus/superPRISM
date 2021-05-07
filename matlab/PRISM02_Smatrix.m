@@ -13,8 +13,6 @@ if ~isfield(emdSTEM,'E0'); emdSTEM.E0 = 80e3; end
 if ~isfield(emdSTEM,'probeSemiangleArray'); emdSTEM.probeSemiangleArray = 20 / 1000; end
 % relative to the entrance surface of the potentials [Angstroms]
 if ~isfield(emdSTEM,'probeDefocusDF'); emdSTEM.probeDefocusDF = 0; end
-% relative to the entrance surface of the potentials [Angstroms]
-if ~isfield(emdSTEM,'sMatrixRefocus'); emdSTEM.sMatrixRefocus = false; end
 % Number of radial rings for the partitioning
 % Set this value to empty to use original PRISM
 if ~isfield(emdSTEM,'partitionNumberRings'); emdSTEM.partitionNumberRings = 4; end
@@ -334,15 +332,9 @@ else
     % Propagation operators
     emdSTEM.prop = exp( q2(emdSTEM.xAA,emdSTEM.yAA) * ...
         (-1i*pi*emdSTEM.lambda*emdSTEM.sliceThickness));
-    %     if emdSTEM.sMatrixRefocus == true
     emdSTEM.propBack = exp( q2(emdSTEM.xAA,emdSTEM.yAA) * ...
         (-1i*pi*emdSTEM.lambda* ...
         (-emdSTEM.probeDefocusC1 - emdSTEM.cellDim(3) + emdSTEM.sliceThickness)));
-    %     else
-    %         emdSTEM.propBackFull = exp( q2 * ...
-    %             (-1i*pi*emdSTEM.lambda* ...
-    %             (emdSTEM.probeDefocusC1 - emdSTEM.cellDim(3) + emdSTEM.sliceThickness)));
-    %     end
     emdSTEM.xTiltBasis = qxa(emdSTEM.xAA,emdSTEM.yAA) * ...
         (2i*pi*emdSTEM.lambda*( emdSTEM.cellDim(3) - emdSTEM.sliceThickness));
     emdSTEM.yTiltBasis = qya(emdSTEM.xAA,emdSTEM.yAA) * ...
@@ -392,14 +384,8 @@ else
                     Psi(emdSTEM.maskAAinv) = 0;
                     Psi(:) = ifft2(Psi);
                 else
-%                     if emdSTEM.sMatrixRefocus == true
                         Psi(emdSTEM.xAA,emdSTEM.yAA) = ...
                             Psi(emdSTEM.xAA,emdSTEM.yAA) .* emdSTEM.propBack;
-%                     else
-%                         Psi(emdSTEM.xAA,emdSTEM.yAA) = ...
-%                             Psi(emdSTEM.xAA,emdSTEM.yAA) ...
-%                             * emdSTEM.propBackFull(emdSTEM.beamList(a1,5));
-%                     end
                 end
             end
             PsiAA(:) = Psi(emdSTEM.maskAA);
