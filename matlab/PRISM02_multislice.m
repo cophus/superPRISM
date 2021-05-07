@@ -28,8 +28,10 @@ if ~isfield(emdSTEM,'xp')
     emdSTEM.yp = (yR(1)+dxy/2):dxy:(yR(2)-dxy/2);
 
     % Single probe position
-    emdSTEM.xp = emdSTEM.cellDim(1) * 0.5;
-    emdSTEM.yp = emdSTEM.cellDim(2) * 0.5;
+%     emdSTEM.xp = emdSTEM.cellDim(1) * 0.5;
+%     emdSTEM.yp = emdSTEM.cellDim(2) * 0.5;
+    emdSTEM.xp = emdSTEM.cellDim(1) * 0.52;
+    emdSTEM.yp = emdSTEM.cellDim(2) * 0.54;
 end
 
 % Calculate wavelength and electron interaction parameter

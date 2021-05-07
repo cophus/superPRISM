@@ -8,7 +8,7 @@ tic
 flagProgress = true;  % Display progress on console
 % Output detector settings
 if ~isfield(emdSTEM,'flagOutput3D'); emdSTEM.flagOutput3D = true; end
-if ~isfield(emdSTEM,'flagOutput4D'); emdSTEM.flagOutput4D = true; end
+if ~isfield(emdSTEM,'flagOutput4D'); emdSTEM.flagOutput4D = false; end
 % spacing of bins in 3D output (rads)
 if ~isfield(emdSTEM,'drBins3D'); emdSTEM.drBins3D = 1 / 1000; end
 % Probe positions at nearest wavefunction pixels (faster, but no sub-pixel probe positions possible)
@@ -25,6 +25,8 @@ if ~isfield(emdSTEM,'xp')
     % Single probe position
     emdSTEM.xp = emdSTEM.cellDim(1) * 0.5;
     emdSTEM.yp = emdSTEM.cellDim(2) * 0.5;
+        emdSTEM.xp = emdSTEM.cellDim(1) * 0.52;
+        emdSTEM.yp = emdSTEM.cellDim(2) * 0.54;
 end
 
 if isempty(emdSTEM.partitionNumberRings)
@@ -90,6 +92,15 @@ else
         %             emdSTEM.beamPartition),[Nout/2 0]),Ntile);
         beamPartition = reshape(circshift(ifft2( ...
             emdSTEM.beamPartition),[floor(Nout/2) 0]),Ntile);
+        
+        q2Defocus = exp((-1i*pi*emdSTEM.lambda*emdSTEM.probeDefocusC1) ...
+            * emdSTEM.q2Interp);
+        for a0 = 1:emdSTEM.beamNum
+            EW = reshape(beamPartition(:,a0),Nout);
+            EW = ifft2(fft2(EW) .* q2Defocus);
+            beamPartition(:,a0) = EW(:);
+        end
+        
     else
         beamPartition = zeros(size(emdSTEM.beamPartition));
         
@@ -97,9 +108,10 @@ else
         [qxa,qya] = makeFourierCoords(Nout,1);
         qxShiftBasis = -2i*pi*qxa(beamInds(:,1));
         qyShiftBasis = -2i*pi*qya(beamInds(:,1));
+        q2DefocusBasis = (-1i*pi*emdSTEM.lambda*emdSTEM.probeDefocusC1) ...
+            * emdSTEM.q2Interp(beamInds(:,1));
     end
     
-
 end
 probeCoefs = zeros(emdSTEM.beamNum,1,'single');
 
@@ -140,7 +152,8 @@ for ax = 1:length(emdSTEM.xp)
         if isempty(emdSTEM.partitionNumberRings)
             probeCoefs(:) = PsiCoefs .* exp( -2i*pi*( ...
                 emdSTEM.beamList(:,3)*emdSTEM.xp(ax) + ...
-                emdSTEM.beamList(:,4)*emdSTEM.yp(ay) ));
+                emdSTEM.beamList(:,4)*emdSTEM.yp(ay)) + ...
+                q2DefocusBasis);
             
             for a0 = 1:emdSTEM.numFP
                 
@@ -195,10 +208,12 @@ for ax = 1:length(emdSTEM.xp)
             else
                 % Generate initial STEM probe
                 beamPartition(:) = emdSTEM.beamPartition;
-                
+
                 beamPartition(beamInds(:,2)) = ...
                     beamPartition(beamInds(:,2)) .* exp( ...
-                    dx*qxShiftBasis + dy*qyShiftBasis);
+                    dx*qxShiftBasis + ...
+                    dy*qyShiftBasis + ...
+                    q2DefocusBasis);
                 beamPartition(:) = ifft2(beamPartition);
                 
                 % Calculate the STEM probe using the masked, compact S-matrix, for
